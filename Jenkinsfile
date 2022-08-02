@@ -11,16 +11,24 @@ pipeline {
     }
     parameters {
         string(name: 'RELEASE_VERSION',
-            defaultValue: '0.0.1',
-            description: 'The version of the terraform provider')
+            defaultValue: '',
+            description: 'The version of the terraform provider. (MAJOR.MINOR.PATCH, e.g. 0.0.1). If the version is left empty, release stage will be skipped.',
+            trim:true)
     }
     stages {
-        stage("Release") {
+        stage("Checkout") {
             steps {
-                script {
-                    assert params.RELEASE_VERSION
-                    terraformProviderRelease(releaseVersion: params.RELEASE_VERSION)
+                checkout scm
+            }
+        }
+        stage("Release") {
+            when {
+                expression {
+                    params.RELEASE_VERSION != ''
                 }
+            }
+            steps {
+                terraformProviderRelease(releaseVersion: params.RELEASE_VERSION)
             }
         }
     }
